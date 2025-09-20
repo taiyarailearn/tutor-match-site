@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,17 +15,31 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // TODO: Implement authentication with your FastAPI backend
-      // This will integrate with your Supabase auth endpoint
-      toast({
-        title: "Coming Soon!",
-        description: "Authentication will be connected to your FastAPI backend once Supabase is integrated.",
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: "You have been signed in successfully.",
+        });
+        navigate("/");
+      }
     } catch (error) {
       toast({
         variant: "destructive",

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,8 @@ export const Signup = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -42,12 +45,33 @@ export const Signup = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Implement registration with your FastAPI backend
-      // This will integrate with your Supabase auth endpoint
-      toast({
-        title: "Coming Soon!",
-        description: "Registration will be connected to your FastAPI backend once Supabase is integrated.",
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            teaching_subject: formData.teachingSubject,
+            experience: formData.experience,
+          }
+        }
       });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: "Please check your email to confirm your account.",
+        });
+        navigate("/login");
+      }
     } catch (error) {
       toast({
         variant: "destructive",
