@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { apiService } from "@/services/api";
+import { MessageCircle, Send } from "lucide-react";
 
 interface Message {
   id: string;
@@ -106,27 +107,12 @@ export const Messages = () => {
     if (!user || !selectedConversation || !newMessage.trim()) return;
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert([
-          {
-            sender_id: user.id,
-            receiver_id: selectedConversation,
-            content: newMessage.trim(),
-          }
-        ]);
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to send message",
-        });
-      } else {
-        setNewMessage("");
-        fetchMessages(); // Refresh messages
-      }
+      await apiService.sendMessage(selectedConversation, newMessage.trim());
+      
+      setNewMessage("");
+      fetchMessages(); // Refresh messages
     } catch (error) {
+      console.error("Error sending message:", error);
       toast({
         variant: "destructive",
         title: "Error",

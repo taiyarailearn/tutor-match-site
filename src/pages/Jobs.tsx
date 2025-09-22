@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { apiService } from "@/services/api";
 import { MapPin, Calendar, Briefcase, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface Job {
   id: string;
@@ -36,25 +38,14 @@ export const Jobs = () => {
 
   const fetchJobs = async () => {
     try {
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .order('date_posted', { ascending: false });
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load jobs",
-        });
-      } else {
-        setJobs(data || []);
-      }
+      const data = await apiService.getJobs();
+      setJobs((data as Job[]) || []);
     } catch (error) {
+      console.error("Error fetching jobs:", error);
       toast({
-        variant: "destructive",
         title: "Error",
-        description: "Failed to load jobs",
+        description: "Failed to fetch jobs. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

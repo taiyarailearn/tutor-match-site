@@ -10,6 +10,7 @@ import { Signup } from "./pages/Auth/Signup";
 import { Jobs } from "./pages/Jobs";
 import { Network } from "./pages/Network";
 import { Messages } from "./pages/Messages";
+import { Profile } from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/network" element={<Network />} />
             <Route path="/messages" element={<Messages />} />
+            <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

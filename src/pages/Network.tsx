@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { apiService } from "@/services/api";
 import { Users, UserPlus, MessageCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface Connection {
   id: string;
@@ -46,19 +47,26 @@ export const Network = () => {
   }, [user, navigate]);
 
   const fetchConnections = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('connections')
-        .select('*')
-        .or(`user_id.eq.${user?.id},connected_user_id.eq.${user?.id}`);
+    if (!user) return;
 
-      if (error) {
-        console.error('Error fetching connections:', error);
-      } else {
-        setConnections(data || []);
-      }
+    try {
+      const data = await apiService.getConnections();
+      setConnections((data as Connection[]) || []);
     } catch (error) {
-      console.error('Error fetching connections:', error);
+      console.error("Error fetching connections:", error);
+      // Fallback to direct Supabase query
+      try {
+        const { data, error } = await supabase
+          .from('connections')
+          .select('*')
+          .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`);
+
+        if (!error) {
+          setConnections(data || []);
+        }
+      } catch (fallbackError) {
+        console.error("Fallback connection fetch failed:", fallbackError);
+      }
     }
   };
 
@@ -85,30 +93,16 @@ export const Network = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from('connections')
-        .insert([
-          {
-            user_id: user.id,
-            connected_user_id: profileId,
-            status: 'pending'
-          }
-        ]);
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to send connection request",
-        });
-      } else {
-        toast({
-          title: "Success!",
-          description: "Connection request sent",
-        });
-        fetchConnections();
-      }
+      await apiService.createConnection(profileId);
+      
+      toast({
+        title: "Success!",
+        description: "Connection request sent",
+      });
+      
+      fetchConnections();
     } catch (error) {
+      console.error("Error creating connection:", error);
       toast({
         variant: "destructive",
         title: "Error",

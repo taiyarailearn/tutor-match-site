@@ -23,6 +23,7 @@ export const Header = () => {
     { href: "/jobs", label: "Jobs", icon: Briefcase },
     { href: "/network", label: "Network", icon: Users },
     { href: "/messages", label: "Messages", icon: MessageCircle },
+    { href: "/profile", label: "Profile", icon: User },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -86,6 +87,13 @@ export const Header = () => {
                       </p>
                     </div>
                   </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="mr-2 h-4 w-4" />
