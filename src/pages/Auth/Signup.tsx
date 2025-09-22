@@ -51,6 +51,7 @@ export const Signup = () => {
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
+            full_name: `${formData.firstName} ${formData.lastName}`.trim(),
             first_name: formData.firstName,
             last_name: formData.lastName,
             teaching_subject: formData.teachingSubject,
